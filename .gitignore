@@ -1,0 +1,7 @@
+.env
+.env.*
+!.env.example
+*.log
+credentials/
+data/
+postgres-data/

@@ -1,0 +1,326 @@
+{
+  "name": "Veille Cyber - Workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 7,
+              "triggerAtMinute": 30
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -192,
+        -96
+      ],
+      "id": "c5ab20fc-2393-4cc7-ac50-970074f3261e",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "url": "https://www.cert.ssi.gouv.fr/feed/scada/",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.rssFeedRead",
+      "typeVersion": 1.2,
+      "position": [
+        48,
+        64
+      ],
+      "id": "5027e6d3-1f93-4d9c-a83a-7fc0d53c9c11",
+      "name": "Cert-fr-scada"
+    },
+    {
+      "parameters": {
+        "url": "https://www.cert.ssi.gouv.fr/feed/",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.rssFeedRead",
+      "typeVersion": 1.2,
+      "position": [
+        32,
+        -96
+      ],
+      "id": "6b6a2f6d-1e35-4b86-83fa-be7eda494d24",
+      "name": "Cert-fr-complet"
+    },
+    {
+      "parameters": {
+        "numberInputs": 4
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        928,
+        -128
+      ],
+      "id": "5f2b9d5f-bcff-4775-837c-bc65cd0862c2",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "url": "https://feeds.feedburner.com/TheHackersNews",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.rssFeedRead",
+      "typeVersion": 1.2,
+      "position": [
+        48,
+        224
+      ],
+      "id": "99b10df0-9500-43f8-b734-500d6e2113e7",
+      "name": "TheHackerNews"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "35cd750a-27ab-4e73-a5cc-87730118355b",
+              "leftValue": "={{ $json.pubDate }}",
+              "rightValue": "={{ $now.minus({ hours: 24 }) }}",
+              "operator": {
+                "type": "dateTime",
+                "operation": "after"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.3,
+      "position": [
+        1136,
+        -128
+      ],
+      "id": "84115c28-6dad-45bf-b0b2-cc4b46d1336e",
+      "name": "Filter"
+    },
+    {
+      "parameters": {
+        "fieldsToAggregate": {
+          "fieldToAggregate": [
+            {
+              "fieldToAggregate": "title"
+            },
+            {
+              "fieldToAggregate": "link"
+            },
+            {
+              "fieldToAggregate": "pubDate"
+            },
+            {
+              "fieldToAggregate": "content"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        1344,
+        -128
+      ],
+      "id": "add91221-aec5-4a1f-815f-3e1b13d889f3",
+      "name": "Aggregate"
+    },
+    {
+      "parameters": {
+        "jsCode": "const titles = $json.title ?? [];\nconst links = $json.link ?? [];\nconst dates = $json.pubDate ?? [];\nconst contents = $json.content ?? [];\n\nlet html = '<h1>Actualités cyber</h1>';\n\nfor (let i = 0; i < titles.length; i++) {\n  html += `\n    <h2>${titles[i]}</h2>\n    <p>${contents[i] ?? ''}</p>\n    <p><a href=\"${links[i] ?? '#'}\">Lire l'article</a></p>\n    <hr>\n  `;\n}\n\nreturn [\n  {\n    json: {\n      html\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1552,
+        -128
+      ],
+      "id": "07082393-c531-4167-9614-d69aad9b42d5",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "fromEmail": "1nt1s4str4@gmail.com",
+        "toEmail": "sukayna.abdou@gmail.com",
+        "subject": "=Actus cyber du {{ $now.toFormat('dd/LL/yyyy') }}",
+        "html": "={{ $json.html }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        1760,
+        -128
+      ],
+      "id": "8386bb98-b56c-4b3b-aba8-0cf0cb7b303a",
+      "name": "Send an Email",
+      "webhookId": "c505f62d-553f-4d25-92a8-ff33c48fdfee",
+      "credentials": {
+        "smtp": {
+          "id": "h4OzkPh6j32coIFq",
+          "name": "SMTP account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "https://feed.ausha.co/rjLzeUqpJDe1 ",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.rssFeedRead",
+      "typeVersion": 1.2,
+      "position": [
+        48,
+        368
+      ],
+      "id": "92a10fbd-246a-4d66-9af0-e975837c5e38",
+      "name": "Riskintel Media"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Cert-fr-complet",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Cert-fr-scada",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "TheHackerNews",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Riskintel Media",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Cert-fr-complet": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Cert-fr-scada": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "TheHackerNews": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 2
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Filter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter": {
+      "main": [
+        [
+          {
+            "node": "Aggregate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Send an Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Riskintel Media": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 3
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false,
+    "timeSavedMode": "fixed",
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "versionId": "ed597b24-f357-4004-98bc-575e002b6764",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "dd2b176029f50806b2cae7eeb7d03712f3bbfd402fbe2de64b35f4f1f495f2c0"
+  },
+  "nodeGroups": [],
+  "id": "5bJB6pYBcD08ZJET",
+  "tags": []
+}
