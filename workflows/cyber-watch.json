@@ -153,8 +153,8 @@
     },
     {
       "parameters": {
-        "fromEmail": "1nt1s4str4@gmail.com",
-        "toEmail": "sukayna.abdou@gmail.com",
+        "fromEmail": "unknown@mail.com",
+        "toEmail": "unknown@mail.com",
         "subject": "=Actus cyber du {{ $now.toFormat('dd/LL/yyyy') }}",
         "html": "={{ $json.html }}",
         "options": {}
